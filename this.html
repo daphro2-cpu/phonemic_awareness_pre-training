@@ -1,0 +1,630 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Phonemic Awareness Adventure Preview</title>
+  <style>
+    * { box-sizing: border-box; }
+
+    body {
+      font-family: "Trebuchet MS", "Comic Sans MS", "Century Gothic", sans-serif;
+      margin: 0;
+      min-height: 100vh;
+      background: linear-gradient(135deg, #fff3f8, #eef6ff, #f3fff2);
+      color: #25304f;
+      overflow-x: hidden;
+    }
+
+    header {
+      background: linear-gradient(135deg, #ff72b6, #7f8cff, #58d6c3);
+      color: white;
+      padding: 28px 20px 24px;
+      text-align: center;
+      box-shadow: 0 6px 18px rgba(0,0,0,0.14);
+    }
+
+    header h1 { margin: 0; font-size: 38px; letter-spacing: 0.5px; }
+    header p { margin: 10px 0 0; font-size: 17px; opacity: 0.96; }
+
+    .shell { max-width: 1050px; margin: 0 auto; padding: 26px 22px 36px; }
+    .topbar { display: flex; align-items: center; gap: 14px; margin-bottom: 18px; }
+    .progress-wrap {
+      flex: 1;
+      background: #dde7ff;
+      border-radius: 999px;
+      overflow: hidden;
+      height: 20px;
+      box-shadow: inset 0 2px 4px rgba(0,0,0,0.08);
+    }
+    .progress-bar {
+      height: 100%;
+      width: 0%;
+      background: linear-gradient(90deg, #ff79b8, #7d8dff, #4fd6bd);
+      transition: 0.35s ease;
+    }
+    .page-count { font-weight: bold; color: #4b5ed7; white-space: nowrap; font-size: 15px; }
+    .page { display: none; animation: popIn 0.35s ease; }
+    .page.active { display: block; }
+
+    @keyframes popIn {
+      from { opacity: 0; transform: translateY(12px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+
+    .card {
+      background: rgba(255,255,255,0.96);
+      border: 4px solid rgba(255,255,255,0.85);
+      border-radius: 28px;
+      padding: 30px;
+      min-height: 560px;
+      box-shadow: 0 12px 35px rgba(75,93,215,0.13);
+      position: relative;
+      overflow: hidden;
+    }
+    .card::before {
+      content: "";
+      position: absolute;
+      width: 170px;
+      height: 170px;
+      border-radius: 50%;
+      background: rgba(255, 121, 184, 0.13);
+      right: -45px;
+      top: -55px;
+    }
+    .card::after {
+      content: "";
+      position: absolute;
+      width: 130px;
+      height: 130px;
+      border-radius: 50%;
+      background: rgba(88, 214, 195, 0.14);
+      left: -40px;
+      bottom: -45px;
+    }
+    .content { position: relative; z-index: 1; }
+
+    h2 { margin: 0 0 18px; color: #4b5ed7; font-size: 31px; }
+    p, li { font-size: 18px; line-height: 1.65; }
+    .mission {
+      display: inline-block;
+      background: #fff0f8;
+      color: #ff4da6;
+      padding: 8px 14px;
+      border-radius: 999px;
+      font-weight: bold;
+      margin-bottom: 16px;
+    }
+    .highlight {
+      background: #eef4ff;
+      border-radius: 18px;
+      padding: 18px 20px;
+      margin: 18px 0;
+      line-height: 1.7;
+      border-left: 7px solid #7d8dff;
+    }
+    .tip {
+      background: #fff6d9;
+      border-left: 7px solid #ffc947;
+      padding: 16px 18px;
+      border-radius: 16px;
+      margin-top: 16px;
+      font-size: 17px;
+      line-height: 1.6;
+    }
+    .question {
+      background: #f9fbff;
+      border-radius: 20px;
+      padding: 20px;
+      margin: 20px 0;
+      border: 2px solid #e0e8ff;
+    }
+    .option {
+      display: block;
+      width: 100%;
+      text-align: left;
+      margin: 10px 0;
+      padding: 15px 16px;
+      border-radius: 16px;
+      background: white;
+      border: 3px solid #dde8ff;
+      cursor: pointer;
+      font-family: inherit;
+      font-size: 17px;
+      transition: 0.18s;
+    }
+    .option:hover { transform: translateY(-2px); background: #f0f6ff; border-color: #9aabff; }
+    .option.selected, .correct { background: #dcf8e7 !important; border-color: #53c77b !important; }
+    .wrong { background: #ffe4ec !important; border-color: #ff6f9f !important; }
+
+    .button {
+      font-family: inherit;
+      background: linear-gradient(135deg, #ff75b7, #7d8dff);
+      color: white;
+      border: none;
+      padding: 13px 22px;
+      border-radius: 16px;
+      font-size: 17px;
+      font-weight: bold;
+      cursor: pointer;
+      transition: 0.2s;
+      box-shadow: 0 5px 12px rgba(0,0,0,0.13);
+      margin: 6px 6px 14px 0;
+    }
+    .button:hover { transform: scale(1.04); }
+    .button.secondary { background: linear-gradient(135deg, #58d6c3, #7d8dff); }
+    .button.gray { background: #9aa7c4; }
+
+    .big-word {
+      font-size: 38px;
+      text-align: center;
+      margin: 20px 0;
+      color: #4b5ed7;
+      font-weight: bold;
+      text-shadow: 2px 2px 0 rgba(255,255,255,0.85);
+    }
+    .term-grid {
+      display: grid;
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+      gap: 14px;
+      margin-top: 20px;
+    }
+    .term-card {
+      background: #ffffff;
+      border: 3px solid #dde8ff;
+      border-radius: 20px;
+      padding: 18px;
+      cursor: pointer;
+      transition: 0.2s;
+      min-height: 100px;
+    }
+    .term-card:hover { transform: translateY(-3px); border-color: #ff8dc7; background: #fff7fb; }
+    .term-title { font-size: 22px; font-weight: bold; color: #4b5ed7; }
+
+    .nav { display: flex; justify-content: space-between; align-items: center; margin-top: 22px; gap: 10px; }
+    .nav button:disabled { opacity: 0.4; cursor: not-allowed; transform: none; }
+    textarea {
+      width: 100%;
+      height: 135px;
+      padding: 15px;
+      border-radius: 16px;
+      border: 3px solid #dde8ff;
+      font-family: inherit;
+      font-size: 16px;
+      resize: vertical;
+    }
+    footer { text-align: center; padding: 28px; color: #5a658a; font-weight: bold; }
+
+    .giraffe-popup {
+      position: fixed;
+      right: 28px;
+      bottom: 120px;
+      background: #fff8d8;
+      border: 4px solid #ffcf57;
+      border-radius: 24px;
+      padding: 14px 18px;
+      box-shadow: 0 10px 28px rgba(0,0,0,0.16);
+      display: none;
+      align-items: center;
+      gap: 12px;
+      z-index: 9999;
+      animation: giraffePop 0.45s ease;
+    }
+    .giraffe-face { font-size: 48px; line-height: 1; }
+    .giraffe-text { font-weight: bold; color: #8a5a00; font-size: 17px; }
+    @keyframes giraffePop {
+      0% { transform: scale(0.5) rotate(-8deg); opacity: 0; }
+      70% { transform: scale(1.08) rotate(3deg); opacity: 1; }
+      100% { transform: scale(1) rotate(0); opacity: 1; }
+    }
+
+    @media (max-width: 760px) {
+      header h1 { font-size: 29px; }
+      .shell { padding: 16px; }
+      .card { padding: 22px; min-height: auto; }
+      h2 { font-size: 25px; }
+      .term-grid { grid-template-columns: 1fr; }
+      .topbar { flex-direction: column; align-items: stretch; }
+      .page-count { text-align: center; }
+    }
+  </style>
+</head>
+<body>
+  <header>
+    <h1>🎧 Phonemic Awareness Adventure 🎈</h1>
+    <p>Teacher Preview Game • Click, Choose, Discover • Approx. 15–25 Minutes</p>
+  </header>
+
+  <main class="shell">
+    <div class="topbar">
+      <div class="progress-wrap"><div class="progress-bar" id="progressBar"></div></div>
+      <div class="page-count" id="pageCount">Level 1 / 8</div>
+    </div>
+
+    <section class="page active">
+      <div class="card"><div class="content">
+        <span class="mission">Level 1</span>
+        <h2>🌈 Welcome to the World of Sounds!</h2>
+        <div class="highlight">
+          Before children read words, they need to notice that spoken words are made of sound parts.
+          <br><br>
+          In this preview, you will try a few activities the way a young learner might experience them.
+        </div>
+        <div class="question">
+          <p><strong>1.</strong> Words can be broken into syllables. Which ONE is correct?</p>
+          <button class="option syllable-option" onclick="showWordBreaker(this, 'correct')">🐊 cro • co • dile</button>
+          <button class="option syllable-option" onclick="showWordBreaker(this, 'wrong1')">🐊 c • r • o • c • o • d • i • l • e</button>
+          <button class="option syllable-option" onclick="showWordBreaker(this, 'wrong2')">🐊 croc • odile</button>
+          <button class="option syllable-option" onclick="showWordBreaker(this, 'wrong3')">🐊 crocod • ile</button>
+
+          <div class="highlight" style="margin-top:22px; border-left:7px solid #ff8dc7;">
+            Words can also be broken into OTHER sound parts too.
+            <br><br>
+            <strong>2.</strong> Click all the sound units we can use when working with words.
+            <br><br>
+            <strong>(More than one answer!)</strong>
+          </div>
+          <button class="option sound-unit-option" onclick="multiSoundChoice(this)">🧩 syllables</button>
+          <button class="option sound-unit-option" onclick="multiSoundChoice(this)">🎤 phonemes</button>
+          <button class="option sound-unit-option" onclick="multiSoundChoice(this)">🔤 onset + rime</button>
+          <button class="option sound-unit-option" onclick="multiSoundChoice(this)">🌟 words</button>
+        </div>
+        <div id="wordBreakerFeedback" class="tip" style="display:none; margin-top:20px;"></div>
+      </div></div>
+    </section>
+
+    <section class="page">
+      <div class="card"><div class="content">
+        <span class="mission">Level 2</span>
+        <h2>🕵️ Sound Detective Mission</h2>
+        <div class="highlight">Phonemic awareness is about spoken sounds. It does not require written letters.</div>
+        <div class="question">
+          <p><strong>1.</strong> Click the activities that help children focus on sounds.</p>
+          <button class="option" onclick="detectiveChoice(this,'sound')">🗣 “What sound does <strong>sun</strong> start with?”</button>
+          <button class="option" onclick="detectiveChoice(this,'print')">✏️ Write the word “sun.”</button>
+          <button class="option" onclick="detectiveChoice(this,'sound')">👂 Blend /s/ /u/ /n/ together.</button>
+          <button class="option" onclick="detectiveChoice(this,'print')">🔤 Circle the letter s.</button>
+        </div>
+        <div id="detectiveFeedback" class="tip" style="display:none;"></div>
+      </div></div>
+    </section>
+
+    <section class="page">
+      <div class="card"><div class="content">
+        <span class="mission">Level 3</span>
+        <h2>🧩 Big Parts, Small Parts</h2>
+        <div class="big-word">🐘 elephant</div>
+        <div class="highlight">Words can be broken into larger parts first. Syllables are usually easier to hear than tiny sounds.</div>
+        <div class="question">
+          <p><strong>1.</strong> Clap the syllables in <strong>elephant</strong>. How many syllables do you hear?</p>
+          <button class="button secondary" onclick="playClaps(3)">👏 Hear the clap beats</button>
+          <button class="option" onclick="checkSyllableCount(this, false)">2 syllables</button>
+          <button class="option" onclick="checkSyllableCount(this, true)">3 syllables</button>
+          <button class="option" onclick="checkSyllableCount(this, false)">4 syllables</button>
+        </div>
+        <div id="syllableFeedback" class="tip" style="display:none;"></div>
+      </div></div>
+    </section>
+
+    <section class="page">
+      <div class="card"><div class="content">
+        <span class="mission">Level 4</span>
+        <h2>🎈 Phoneme Counter</h2>
+        <div class="highlight">Phonemes are the smallest individual sounds we hear in spoken words.</div>
+        <div class="question">
+          <p><strong>1.</strong> How many phonemes do you hear in <strong>ship</strong>?</p>
+          <button class="button secondary" onclick="playClaps(3)">👏 Hear 3 sound beats</button>
+          <button class="option" onclick="checkPhonemeCount(this, false)">2 phonemes</button>
+          <button class="option" onclick="checkPhonemeCount(this, true)">3 phonemes</button>
+          <button class="option" onclick="checkPhonemeCount(this, false)">4 phonemes</button>
+        </div>
+        <div id="phonemeFeedback" class="tip" style="display:none;"></div>
+      </div></div>
+    </section>
+
+    <section class="page">
+      <div class="card"><div class="content">
+        <span class="mission">Level 5</span>
+        <h2>🎈 Another Phoneme Counter</h2>
+        <div class="highlight">Some words have spellings that look long, but the number of sounds may be different.</div>
+        <div class="question">
+          <p><strong>1.</strong> How many phonemes do you hear in <strong>frog</strong>?</p>
+          <button class="button secondary" onclick="playClaps(4)">👏 Hear 4 sound beats</button>
+          <button class="option" onclick="checkChairPhonemes(this, false)">3 phonemes</button>
+          <button class="option" onclick="checkChairPhonemes(this, true)">4 phonemes</button>
+          <button class="option" onclick="checkChairPhonemes(this, false)">5 phonemes</button>
+        </div>
+        <div id="chairPhonemeFeedback" class="tip" style="display:none;"></div>
+      </div></div>
+    </section>
+
+    <section class="page">
+      <div class="card"><div class="content">
+        <span class="mission">Level 6</span>
+        <h2>👏 Syllable Detective</h2>
+        <div class="big-word">🦒 giraffe</div>
+        <div class="highlight">Syllables are larger sound chunks that children can often hear by clapping.</div>
+        <div class="question">
+          <p><strong>1.</strong> How many syllables do you hear in <strong>giraffe</strong>?</p>
+          <button class="button secondary" onclick="playClaps(2)">👏 Hear the clap beats</button>
+          <button class="option" onclick="checkGiraffeSyllables(this, true)">2 syllables</button>
+          <button class="option" onclick="checkGiraffeSyllables(this, false)">3 syllables</button>
+          <button class="option" onclick="checkGiraffeSyllables(this, false)">4 syllables</button>
+        </div>
+        <div id="giraffeSyllableFeedback" class="tip" style="display:none;"></div>
+      </div></div>
+    </section>
+
+    <section class="page">
+      <div class="card"><div class="content">
+        <span class="mission">Level 7</span>
+        <h2>✏️ Grapheme Match</h2>
+        <div class="highlight">A grapheme is the written spelling that represents a sound.</div>
+        <div class="question">
+          <p><strong>1.</strong> Which graphemes can represent the sound <strong>/f/</strong>?</p>
+          <button class="option grapheme-option" onclick="checkGrapheme(this, true)">f</button>
+          <button class="option grapheme-option" onclick="checkGrapheme(this, true)">ph</button>
+          <button class="option grapheme-option" onclick="checkGrapheme(this, false)">th</button>
+          <button class="option grapheme-option" onclick="checkGrapheme(this, false)">ch</button>
+        </div>
+        <div id="graphemeFeedback" class="tip" style="display:none;"></div>
+      </div></div>
+    </section>
+
+    <section class="page">
+      <div class="card"><div class="content">
+        <span class="mission">Level 8</span>
+        <h2>🎓 Power Word Zone</h2>
+        <div class="highlight">These words may sound academic, but the ideas are simple. Click each card to explore.</div>
+        <div class="term-grid">
+          <div class="term-card" onclick="showWordInfo('phoneme')"><div class="term-title">🎤 phoneme</div><p>Smallest sound</p></div>
+          <div class="term-card" onclick="showWordInfo('grapheme')"><div class="term-title">✏️ grapheme</div><p>Written sound spelling</p></div>
+          <div class="term-card" onclick="showWordInfo('onset')"><div class="term-title">🧩 onset + rime</div><p>Beginning + rest</p></div>
+          <div class="term-card" onclick="showWordInfo('phonics')"><div class="term-title">🔤 phonics</div><p>Sounds + letters</p></div>
+        </div>
+        <div id="wordInfo" class="tip" style="display:none;"></div>
+      </div></div>
+    </section>
+
+    <div class="nav">
+      <button class="button gray" id="prevBtn" onclick="changePage(-1)">← Previous</button>
+      <button class="button" id="nextBtn" onclick="changePage(1)">Next Level →</button>
+    </div>
+  </main>
+
+  <div class="giraffe-popup" id="giraffePopup">
+    <div class="giraffe-face">🦒</div>
+    <div class="giraffe-text" id="giraffeText">Good job!</div>
+  </div>
+
+  <footer>Giraffe Inspire • Phonemic Awareness Essential Training</footer>
+
+  <script>
+    let currentPage = 0;
+    const pages = document.querySelectorAll('.page');
+    const progressBar = document.getElementById('progressBar');
+    const pageCount = document.getElementById('pageCount');
+    const prevBtn = document.getElementById('prevBtn');
+    const nextBtn = document.getElementById('nextBtn');
+
+    function updatePage() {
+      pages.forEach((page, index) => page.classList.toggle('active', index === currentPage));
+      const percent = ((currentPage + 1) / pages.length) * 100;
+      progressBar.style.width = percent + '%';
+      pageCount.innerText = `Level ${currentPage + 1} / ${pages.length}`;
+      prevBtn.disabled = currentPage === 0;
+      nextBtn.innerText = currentPage === pages.length - 1 ? 'Finish 🎉' : 'Next Level →';
+    }
+
+    function changePage(direction) {
+      if (currentPage === pages.length - 1 && direction === 1) {
+        alert('🎉 Great job! You finished the preview adventure.
+
+Training is on 5/21 — see you soon! 🦒');
+        return;
+      }
+      currentPage = Math.min(Math.max(currentPage + direction, 0), pages.length - 1);
+      updatePage();
+      window.scrollTo({ top: 0, behavior: 'smooth' });
+    }
+
+    function showGiraffe(message) {
+      const popup = document.getElementById('giraffePopup');
+      const text = document.getElementById('giraffeText');
+      if (!popup || !text) return;
+      text.innerText = message || 'Good job!';
+      popup.style.display = 'flex';
+      playCutePopSound();
+      clearTimeout(window.giraffeTimer);
+      window.giraffeTimer = setTimeout(() => { popup.style.display = 'none'; }, 1800);
+    }
+
+    function playCutePopSound() {
+      try {
+        const AudioContext = window.AudioContext || window.webkitAudioContext;
+        const ctx = new AudioContext();
+        const osc = ctx.createOscillator();
+        const gain = ctx.createGain();
+        osc.type = 'sine';
+        osc.frequency.setValueAtTime(520, ctx.currentTime);
+        osc.frequency.exponentialRampToValueAtTime(880, ctx.currentTime + 0.12);
+        gain.gain.setValueAtTime(0.001, ctx.currentTime);
+        gain.gain.exponentialRampToValueAtTime(0.16, ctx.currentTime + 0.02);
+        gain.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + 0.22);
+        osc.connect(gain);
+        gain.connect(ctx.destination);
+        osc.start();
+        osc.stop(ctx.currentTime + 0.23);
+      } catch (e) {}
+    }
+
+    function resetActiveOptions(selector = '.page.active .option') {
+      document.querySelectorAll(selector).forEach(btn => btn.classList.remove('correct', 'wrong'));
+    }
+
+    function showWordBreaker(button, type) {
+      const box = document.getElementById('wordBreakerFeedback');
+      box.style.display = 'block';
+      document.querySelectorAll('.syllable-option').forEach(btn => btn.classList.remove('correct', 'wrong'));
+      const messages = {
+        correct: '🎉 Correct! <strong>cro • co • dile</strong> is the syllable breakdown. Syllables are larger sound chunks that children can often hear more easily.',
+        wrong1: '👂 This breaks the word into individual letters, not syllables. Try clapping the word instead of spelling it.',
+        wrong2: '🧩 Good try, but listen again. We usually clap it as: <strong>cro • co • dile</strong>.',
+        wrong3: '✨ Almost! Try clapping the beats in the word again: <strong>cro • co • dile</strong>.'
+      };
+      button.classList.add(type === 'correct' ? 'correct' : 'wrong');
+      box.innerHTML = `<strong>Feedback for Question 1:</strong><br>${messages[type]}`;
+      if (type === 'correct') showGiraffe('Yay! You found the syllables!');
+    }
+
+    function multiSoundChoice(element) {
+      element.classList.toggle('selected');
+      const selected = document.querySelectorAll('.sound-unit-option.selected').length;
+      const box = document.getElementById('wordBreakerFeedback');
+      if (selected >= 2) {
+        box.style.display = 'block';
+        box.innerHTML = `
+          <strong>Feedback for Question 2:</strong><br>
+          🌟 Great thinking! Words can be broken into different sound units depending on the activity.
+          <br><br>
+          During the training, we will explore:
+          <br>• syllables
+          <br>• onset + rime
+          <br>• phonemes
+          <br>• words
+        `;
+        showGiraffe('You found different sound units!');
+      }
+    }
+
+    let soundClicks = 0;
+    function detectiveChoice(element, type) {
+      const feedback = document.getElementById('detectiveFeedback');
+      feedback.style.display = 'block';
+      if (type === 'sound') {
+        if (!element.classList.contains('correct')) soundClicks++;
+        element.classList.add('correct');
+        showGiraffe('Good job!');
+        feedback.innerHTML = soundClicks >= 2
+          ? '🕵️ Excellent. These activities focus on listening to and playing with sounds. That is the phonemic awareness direction.'
+          : '👂 Yes. This focuses on sounds. Can you find another sound-based activity?';
+      } else {
+        element.classList.add('wrong');
+        feedback.innerHTML = '🔤 This uses written letters. It is useful, but it belongs more to phonics or writing, not pure phonemic awareness.';
+      }
+    }
+
+    function playClaps(count) {
+      try {
+        const AudioContext = window.AudioContext || window.webkitAudioContext;
+        const ctx = new AudioContext();
+        for (let i = 0; i < count; i++) {
+          const osc = ctx.createOscillator();
+          const gain = ctx.createGain();
+          osc.type = 'triangle';
+          osc.frequency.value = 620;
+          gain.gain.setValueAtTime(0.001, ctx.currentTime + i * 0.45);
+          gain.gain.exponentialRampToValueAtTime(0.2, ctx.currentTime + i * 0.45 + 0.02);
+          gain.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + i * 0.45 + 0.12);
+          osc.connect(gain);
+          gain.connect(ctx.destination);
+          osc.start(ctx.currentTime + i * 0.45);
+          osc.stop(ctx.currentTime + i * 0.45 + 0.13);
+        }
+      } catch (e) {}
+    }
+
+    function checkSyllableCount(element, correct) {
+      const box = document.getElementById('syllableFeedback');
+      box.style.display = 'block';
+      resetActiveOptions();
+      if (correct) {
+        element.classList.add('correct');
+        box.innerHTML = '🎉 Correct! <strong>elephant</strong> has 3 syllables: <strong>el • e • phant</strong>.';
+        showGiraffe('Good job!');
+      } else {
+        element.classList.add('wrong');
+        box.innerHTML = '👏 Try clapping it slowly: <strong>el • e • phant</strong>.';
+      }
+    }
+
+    function checkPhonemeCount(element, correct) {
+      const box = document.getElementById('phonemeFeedback');
+      box.style.display = 'block';
+      resetActiveOptions();
+      if (correct) {
+        element.classList.add('correct');
+        box.innerHTML = '🎉 Correct! <strong>ship</strong> has 3 phonemes: /sh/ /i/ /p/. The <strong>sh</strong> spelling represents ONE phoneme.';
+        showGiraffe('You counted the phonemes!');
+      } else {
+        element.classList.add('wrong');
+        box.innerHTML = '💛 It is okay if you got it wrong. That is what the training is for! Try listening for the sound parts slowly: /sh/ /i/ /p/.';
+      }
+    }
+
+    function checkChairPhonemes(element, correct) {
+      const box = document.getElementById('chairPhonemeFeedback');
+      box.style.display = 'block';
+      resetActiveOptions();
+      if (correct) {
+        element.classList.add('correct');
+        box.innerHTML = '🎉 Correct! <strong>frog</strong> has 4 phonemes: /f/ /r/ /o/ /g/. We are counting sounds, not letters.';
+        showGiraffe('Good phoneme thinking!');
+      } else {
+        element.classList.add('wrong');
+        box.innerHTML = '💛 It is okay if you got it wrong. That is what the training is for! Try stretching the sounds slowly: /f/ /r/ /o/ /g/.';
+      }
+    }
+
+    function checkGiraffeSyllables(element, correct) {
+      const box = document.getElementById('giraffeSyllableFeedback');
+      box.style.display = 'block';
+      resetActiveOptions();
+      if (correct) {
+        element.classList.add('correct');
+        box.innerHTML = '🎉 Correct! <strong>giraffe</strong> has 2 syllables: gi • raffe.';
+        showGiraffe('Nice syllable listening!');
+      } else {
+        element.classList.add('wrong');
+        box.innerHTML = '👏 Try clapping the beats slowly again.';
+      }
+    }
+
+    function checkGrapheme(element, correct) {
+      element.classList.toggle('selected');
+      if (!correct) element.classList.toggle('wrong');
+      const correctSelected = Array.from(document.querySelectorAll('.grapheme-option'))
+        .filter(btn => btn.classList.contains('selected') && (btn.textContent.trim() === 'f' || btn.textContent.trim() === 'ph')).length;
+      const box = document.getElementById('graphemeFeedback');
+      if (correctSelected >= 2) {
+        box.style.display = 'block';
+        box.innerHTML = '✨ Great! Both <strong>f</strong> and <strong>ph</strong> can represent the sound /f/. Graphemes are written spellings for sounds.';
+        showGiraffe('You matched the graphemes!');
+      }
+    }
+
+    function showWordInfo(type) {
+      const box = document.getElementById('wordInfo');
+      box.style.display = 'block';
+      const info = {
+        phoneme: '🎤 <strong>Phoneme</strong><br>The smallest individual sound in a spoken word.<br><br>Example: ship → /sh/ /i/ /p/',
+        grapheme: '✏️ <strong>Grapheme</strong><br>The written letter or letter group that represents a sound.<br><br>Example: the sound /f/ can be written as <strong>f</strong> or <strong>ph</strong>.',
+        onset: '🧩 <strong>Onset + Rime</strong><br>The beginning sound + the rest of the syllable.<br><br>Example: cat → c + at',
+        phonics: '🔤 <strong>Phonics</strong><br>Connecting spoken sounds to written letters or spelling patterns.<br><br>Phonemic awareness is sound-only. Phonics adds print.'
+      };
+      box.innerHTML = info[type];
+    }
+
+    function runSmokeTests() {
+      console.assert(typeof showGiraffe === 'function', 'showGiraffe should be defined');
+      console.assert(document.getElementById('giraffePopup'), 'giraffePopup element should exist');
+      console.assert(document.getElementById('giraffeText'), 'giraffeText element should exist');
+      console.assert(pages.length === 8, 'There should be 8 pages after cleanup');
+      console.assert(typeof playClaps === 'function', 'playClaps should be defined for syllable levels');
+    }
+
+    updatePage();
+    runSmokeTests();
+  </script>
+</body>
+</html>
